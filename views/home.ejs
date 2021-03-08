@@ -1,0 +1,23 @@
+<%- include('partials/header'); -%>
+<div class="container">
+  <h1>Home</h1>
+  <p><%=firstPara%></p>
+</div>
+
+<div class="container ">
+  <% posts.forEach(e => {  %> 
+  <h1><%= e.title%></h1>
+  
+  <!-- <p><%= e.content.subtring(0,100) +"..."%>
+    <a href="/posts/<%= e.title%>">Read More</a>
+  </p> -->
+
+  <div class="lengthLimited">
+    <p><%= e.content%></p>
+    <a href="/posts/<%= e.title%>">Read More</a>
+  </div>
+  <% }); %> 
+</div>
+
+<%- include('partials/footer'); -%>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
