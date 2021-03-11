@@ -2,9 +2,21 @@ const express = require("express");
 const ejs = require("ejs");
 const app = express();
 const _ = require('lodash');
-// const fs = require('fs');
+const mongoose = require('mongoose');
+
+mongoose.connect('mongodb://localhost/blogDB', {useNewUrlParser: true, useUnifiedTopology: true});
 const { error } = require("console");
+const { title } = require("process");
 let posts = [];
+const postSchema = new mongoose.Schema({
+  title: {
+  type: String,
+  required: [true, 'Why no title?']},
+  content: String
+});
+
+const Post = mongoose.model('Post', postSchema);
+
 
 const homeStartingContent =
   "Lacus vel facilisis volutpat est velit egestas dui id ornare. Semper auctor neque vitae tempus quam. Sit amet cursus sit amet dictum sit amet justo. Viverra tellus in hac habitasse. Imperdiet proin fermentum leo vel orci porta. Donec ultrices tincidunt arcu non sodales neque sodales ut. Mattis molestie a iaculis at erat pellentesque adipiscing. Magnis dis parturient montes nascetur ridiculus mus mauris vitae ultricies. Adipiscing elit ut aliquam purus sit amet luctus venenatis lectus. Ultrices vitae auctor eu augue ut lectus arcu bibendum at. Odio euismod lacinia at quis risus sed vulputate odio ut. Cursus mattis molestie a iaculis at erat pellentesque adipiscing.";
@@ -16,8 +28,13 @@ app.set("view engine", "ejs");
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static("public"));
+
 app.get("/", (req, res) => {
-  res.render("home", { firstPara: homeStartingContent, posts: posts });
+  Post.find({}, (err, posts) => {
+    if (err) throw err;   
+    res.render("home", { firstPara: homeStartingContent, posts: posts});
+    console.log(posts._id);
+  });
 });
 
 app.get("/about", (req, res) => {
@@ -27,24 +44,29 @@ app.get("/contact", (req, res) => {
   res.render("contact", { firstPara: contactContent });
 });
 app.get("/compose", (req, res) => {
+
   res.render("compose");
 });
 app.post("/compose", (req, res) => {
-  const post = {
+  const post = new Post({
     title: req.body.postTitle,
-    content: req.body.postContent,
-  };
-  posts.push(post);
+    content: req.body.postContent
+  });
+  post.save();
   res.redirect("/");
 });
 
 app.get("/posts/:topic", (req,res) =>{
-  posts.forEach(post =>{
-    if (_.lowerCase(req.params.topic) === _.lowerCase(post.title)) {
-      res.render("post", { theTitle: post.title, theContent: post.content});
-    } ;
-  });
+  const postId = req.params.topic;
+  Post.findById(postId, (err, post) =>{
+    if (err) throw err ;
+    res.render("post", { theTitle: post.title, theContent: post.content});
+  })
 });
 
-
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'connection error:'));
+db.once('open', function() {
+  console.log("Server is connected succefully!");
+});
 app.listen(3000, () =>  console.log("Server started on port 3000"));
