@@ -33,9 +33,10 @@ app.get("/", (req, res) => {
   Post.find({}, (err, posts) => {
     if (err) throw err;   
     res.render("home", { firstPara: homeStartingContent, posts: posts});
-    console.log(posts._id);
   });
 });
+
+
 
 app.get("/about", (req, res) => {
   res.render("about", { firstPara: aboutContent });
@@ -52,8 +53,11 @@ app.post("/compose", (req, res) => {
     title: req.body.postTitle,
     content: req.body.postContent
   });
-  post.save();
-  res.redirect("/");
+  post.save( err => {
+    if (!err){
+      res.redirect("/");
+    };
+  });
 });
 
 app.get("/posts/:topic", (req,res) =>{
